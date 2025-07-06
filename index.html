@@ -1,25 +1,179 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>タイトル</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js OBJ Viewer</title>
 
     <style>
-     
+        body { margin: 0; overflow: hidden; }
+        #myCanvas { display: block; }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-family: sans-serif;
+            z-index: 100;
+            /* ★★★ #controls の max-height と overflow-y: auto は維持 ★★★ */
+            /* こちらはパネル全体が画面サイズを超えた場合にスクロールするため */
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+        }
+        #fileInput {
+            margin-top: 5px;
+        }
+        #meshListContainer { /* メッシュリストのコンテナ */
+            margin-top: 15px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+            /*  メッシュリスト専用のスクロールバー */
+            max-height: 300px; /* 例: メッシュリストの最大高さを設定 */
+            overflow-y: auto; /* 高さが超えたらスクロールバーを表示 */
+            padding-right: 10px; /* スクロールバーとの被りを避けるための余白 */
+            /* --------------------------------------------------------- */
+			
+			margin-bottom: 15px; /* 新しいパネルとの間に余白 */
+        }
+        #meshList { /* メッシュリスト本体 */
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #meshList li {
+            cursor: pointer;
+            padding: 5px 0;
+            border-bottom: 1px dotted #eee;
+        }
+        #meshList li:last-child {
+            border-bottom: none;
+        }
+        #meshList li:hover {
+            background-color: #f0f0f0;
+        }
+		#effectsPanel {
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+            margin-top: 15px;
+        }
+        #meshSelect {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+        .control-group {
+            margin-bottom: 8px;
+        }
+        .control-group label {
+            display: inline-block;
+            margin-right: 10px;
+
+			
+			min-width: 80px; /* Adjust as needed for alignment */
+        }
+		/* New styles for slider and color picker */
+        input[type="range"] {
+            width: calc(100% - 90px); /* Adjust width considering label */
+            vertical-align: middle;
+        }
+        input[type="color"] {
+            width: 50px; /* Fixed width for color picker */
+            vertical-align: middle;
+            height: 25px; /* Adjust height for consistent look */
+        }
     </style>
+
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+            }
+        }
+    </script>
 </head>
+
+
+
+<!-- 
 <body>
-  <a class="twitter-timeline" href="https://twitter.com/20s_tnewties">Tweets by 20s_tnewties</a> 
-    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    <canvas id="myCanvas"></canvas>
 
-  <a class="twitter-timeline" data-lang="de" data-height="250" data-dnt="true" data-theme="dark" href="https://twitter.com/20s_tnewties?ref_src=twsrc%5Etfw">Tweets by 20s_tnewties</a> 
-    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    
+    <div id="controls">
+        <h2>3Dモデルを読み込む</h2>
+        <input type="file" id="fileInput" accept=".obj,.mtl" multiple>
+        <p><small>※ OBJ/MTLファイルを同時に選択してください。</small></p>
+        <p id="fileNameDisplay"></p>
 
-    <p>このページは視覚的に刺激的な体験を提供します。</p>
-    <a href="#">クリックしてもっと刺激を！</a>
+        <div id="meshListContainer">
+            <h3>全メッシュ一覧:</h3>
+            <ul id="meshList">
+            </ul>
+        </div>
 
+        <div id="effectsPanel">
+            <h3>メッシュ効果コントロール:</h3>
+            <div class="control-group">
+                <label for="meshSelect">メッシュ選択:</label>
+                <select id="meshSelect">
+                    <option value="">- メッシュを選択 -</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <input type="checkbox" id="emissiveToggle">
+                <label for="emissiveToggle">発光 (Emissive)</label>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./index_render_javascript.js"></script>
 </body>
-</html>
+-->
+
+
+<body>
+    <canvas id="myCanvas"></canvas>
+
+    <div id="controls">
+        <h2>3Dモデルを読み込む</h2>
+        <input type="file" id="fileInput" accept=".obj,.mtl" multiple>
+        <p><small>※ OBJ/MTLファイルを同時に選択してください。</small></p>
+        <p id="fileNameDisplay"></p>
+
+        <div id="meshListContainer">
+            <h3>全メッシュ一覧:</h3>
+            <ul id="meshList">
+                </ul>
+        </div>
+
+        <div id="effectsPanel">
+            <h3>メッシュ効果コントロール:</h3>
+            <div class="control-group">
+                <label for="meshSelect">メッシュ選択:</label>
+                <select id="meshSelect">
+                    <option value="">- メッシュを選択 -</option>
+                    </select>
+            </div>
+            <div class="control-group">
+                <input type="checkbox" id="emissiveToggle">
+                <label for="emissiveToggle">発光 (Emissive)</label>
+            </div>
+            <div class="control-group">
+                <label for="emissiveColorPicker">発光色:</label>
+                <input type="color" id="emissiveColorPicker" value="#ffffff" disabled>
+            </div>
+            <div class="control-group">
+                <label for="emissiveIntensitySlider">発光強度:</label>
+                <input type="range" id="emissiveIntensitySlider" min="0" max="2" step="0.01" value="0" disabled>
+                <span id="emissiveIntensityValue">0.00</span>
+            </div>
+            </div>
+    </div>
+
+    <script type="module" src="./index_render_javascript.js"></script>
+</body>
+
+</html>	
