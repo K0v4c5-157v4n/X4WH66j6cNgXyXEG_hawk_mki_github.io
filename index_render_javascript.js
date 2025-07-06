@@ -452,6 +452,74 @@ updateEffectControls();
 
 
 
+// シーン、カメラ、レンダラーのセットアップ
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
+camera.position.z = 5;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// ライティングの追加
+// アンビエントライト: シーン全体を均等に照らす
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+
+// ディレクショナルライト: 特定の方向からの光
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(5, 10, 7.5);
+scene.add(directionalLight);
+
+// テクスチャの読み込みとマテリアルの適用
+const textureLoader = new THREE.TextureLoader();
+textureLoader.load(
+  'assets/textures/modelTexture.png', // 画像ファイルの正しいパスを指定してください
+  (texture) => {
+    texture.needsUpdate = true;
+
+    // モデルのジオメトリ (例としてBoxGeometryを使用)
+    // 実際のモデルのジオメトリがある場合は、こちらに置き換えてください
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+
+    // MeshStandardMaterialを使用して、ライトの影響を受けるマテリアルに設定
+    const material = new THREE.MeshStandardMaterial({
+      map: texture,
+      roughness: 0.7,
+      metalness: 0.2,
+    });
+
+    // メッシュを生成し、シーンに追加
+    const modelMesh = new THREE.Mesh(geometry, material);
+    scene.add(modelMesh);
+  },
+  undefined,
+  (error) => {
+    console.error('テクスチャの読み込みに失敗しました:', error);
+  }
+);
+
+// アニメーションループ
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+animate();
+
+// ビューポートのリサイズに対応
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+
 
 
 // ★★★ 変更点2: onWindowResize 関数は既にありますが、内容を再確認 ★★★
@@ -459,7 +527,7 @@ function tick() {
     controls.update(); // カメラコントローラーの更新
     renderer.render(scene, camera); // レンダリング
     requestAnimationFrame(tick);
-}
+};
 
 // ウィンドウのリサイズイベントハンドラ
 window.addEventListener('resize', onWindowResize, false);
@@ -493,3 +561,9 @@ function onWindowResize() {
  * @param {string} objContent - OBJファイルの内容
  * @param {string|null} mtlContent - MTLファイルの内容 (なければnull)
  */
+
+
+
+
+
+
