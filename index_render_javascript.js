@@ -255,15 +255,44 @@ emissiveToggle.addEventListener('change', () => {
 
 function loadModel(objContent, mtlContent) {
     const objLoader = new OBJLoader();
+    const textureLoader = new THREE.TextureLoader();
 
     if (mtlContent) {
         const mtlLoader = new MTLLoader();
+        // テクスチャのベースパスを設定
+        mtlLoader.setResourcePath('./textures/');
+        
         const materials = mtlLoader.parse(mtlContent);
         materials.preload();
+        
+        // マテリアルごとにテクスチャを処理
+        Object.values(materials.materials).forEach(material => {
+            if (material.map) {
+                // テクスチャのロードと設定
+                const texture = textureLoader.load(material.map.image.src);
+                material.map = texture;
+                material.needsUpdate = true;
+            }
+        });
+        
         objLoader.setMaterials(materials);
     }
 
     const obj = objLoader.parse(objContent);
+    
+    // メッシュごとにマテリアルの更新を確認
+    obj.traverse((child) => {
+        if (child.isMesh) {
+            if (Array.isArray(child.material)) {
+                child.material.forEach(mat => {
+                    mat.needsUpdate = true;
+                });
+            } else if (child.material) {
+                child.material.needsUpdate = true;
+            }
+        }
+    });
+
     scene.add(obj);
 
 
